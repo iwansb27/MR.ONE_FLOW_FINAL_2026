@@ -1,32 +1,40 @@
 # MR.ONE_FLOW_FINAL_2026
 
-## Meta Publisher — Mr. One Iwan 2026
+## MR.ONE — Personal Test Baseline
 
-Repository utama proyek MR.ONE 2026.
+Repository ini sekarang **khusus untuk uji pribadi Iwan terlebih dahulu**.
 
-### Tujuan
+Tujuan tahap awal bukan membuat seluruh sistem MR.ONE, tetapi membuktikan satu alur paling sederhana dari awal sampai berhasil.
 
-Membangun alur publishing konten sederhana untuk pengguna non-teknis, dengan fokus awal pada Facebook Page.
+### Baseline Uji Pribadi v0.1
 
-### Flow
+**Flow yang diuji:** Discovery sederhana.
 
-1. **Discovery** — AI Research + Web/URL Research.
-2. **Production** — analisis link, pembuatan konten, preview, dan approval.
-3. **Distribution** — hand-off konten approved ke Metricool untuk scheduling.
+Alur:
 
-### Batasan inti
+1. Iwan memasukkan topik/kategori.
+2. MR.ONE melakukan research sederhana.
+3. Sistem menampilkan maksimal **3 hasil** yang ditemukan.
+4. Setiap hasil menampilkan nama, sumber/link, dan gambar jika tersedia.
+5. Iwan dapat memilih **Open Product** atau **Save**.
 
-- Maksimal 7 produk hasil discovery.
-- Konten video maksimal 60 detik.
-- Preview dan Approval wajib sebelum distribution.
-- Scheduling maksimal 7 hari.
-- Status publication: Draft, Menunggu Approval, Approved, Terjadwal, Terkirim, Gagal, Perlu Retry.
+### Yang BELUM diuji
 
-### Connector
+- 7 produk.
+- Flow Production lengkap.
+- AI video.
+- Upload media.
+- Preview/Approval penuh.
+- Metricool publishing.
+- Scheduling 7 hari.
+- Marketplace API.
 
-- AI Connector
-- Web/Research Connector
-- Link Analyzer
-- Metricool Connector
+### Prinsip
 
-Marketplace API bukan bagian dari baseline.
+- Sesederhana mungkin.
+- Uji oleh pemilik proyek sendiri terlebih dahulu.
+- Jangan membangun fitur yang belum diperlukan untuk membuktikan baseline.
+- Jangan mengarang data produk.
+- Setelah baseline v0.1 stabil, fitur ditambahkan bertahap.
+
+Blueprint lengkap tetap disimpan di `docs/BLUEPRINT.md` sebagai target pengembangan berikutnya, tetapi **tidak menjadi beban implementasi pada tahap uji pribadi ini**.
