@@ -1,38 +1,49 @@
-# MR.ONE 2026 — Blueprint Baseline
+# MR.ONE 2026 — Blueprint
 
-## Flow 1 — Discovery
+## Tahap Aktif: Personal Test v0.1
 
-Purpose: menemukan hingga 7 produk referensi/trending berdasarkan marketplace yang dipilih pengguna.
+Untuk tahap pertama, blueprint implementasi dipersempit menjadi satu alur paling sederhana agar Iwan dapat menguji sendiri.
 
-Pipeline:
-- AI Research
-- Web/URL Research
-- hasil produk: nama, trend/demand, kategori, gambar bila tersedia
-- tindakan: Open Product / Save
+### Flow 1 — Discovery Sederhana
 
-Aturan: jangan membuat atau mengarang listing produk palsu.
+1. Input topik/kategori.
+2. Research sederhana.
+3. Tampilkan maksimal 3 hasil.
+4. Tampilkan nama, sumber/link, dan gambar bila tersedia.
+5. Aksi Open Product / Save.
 
-## Flow 2 — Production
+**Wajib:** data harus berasal dari sumber nyata; jangan membuat listing produk palsu.
 
-Input utama: affiliate link.
+### Flow yang Ditunda
 
-Pipeline:
-- Link Analyzer
-- tampilkan Products from Link Affiliate
-- Product Original
-- Upload Own + Product
-- AI Content + Product + Photo Figur
-- video maksimal 60 detik
-- Preview
-- Approval wajib sebelum publishing
+Flow Production dan Distribution belum menjadi bagian dari baseline v0.1. Keduanya tetap menjadi target pengembangan setelah Discovery sederhana terbukti stabil.
 
-## Flow 3 — Distribution
+## Target Setelah v0.1
 
-Konten yang sudah Approved diserahkan ke Metricool Connector untuk scheduling/publishing.
+### Flow 1 — Discovery Lengkap
 
-Scheduling maksimal 7 hari.
+- Hingga 7 produk.
+- AI Research + Web/URL Research.
+- Trend/demand, kategori, gambar bila tersedia.
+- Open Product / Save.
 
-## Publication Status
+### Flow 2 — Production
+
+- Affiliate link.
+- Link Analyzer.
+- Product data.
+- Product Original.
+- Upload Own + Product.
+- AI Content + Product + Photo Figur.
+- Video maksimal 60 detik.
+- Preview + Approval.
+
+### Flow 3 — Distribution
+
+- Approved content → Metricool Connector.
+- Scheduling maksimal 7 hari.
+
+### Publication Status
 
 - Draft
 - Menunggu Approval
@@ -42,15 +53,11 @@ Scheduling maksimal 7 hari.
 - Gagal
 - Perlu Retry
 
-## Connector Panel
+### Connector Target
 
-- AI Connector — reasoning, research, analysis, content creation
-- Web/Research Connector — membaca halaman web
-- Link Analyzer — mengenali affiliate link
-- Metricool Connector — distribution/scheduling
+- AI Connector
+- Web/Research Connector
+- Link Analyzer
+- Metricool Connector
 
 Marketplace API tidak diperlukan untuk baseline.
-
-## Prinsip Produk
-
-MR.ONE ditujukan untuk pengguna non-teknis. Pengguna tidak dipaksa mengelola API key secara manual; koneksi layanan diarahkan melalui connector/navigator yang sederhana.
