@@ -1,0 +1,44 @@
+# Tests
+
+## Test 1 - Create product content with provider selection [sanity]
+Viewport: desktop
+Covers: screenshot upload, provider selection, Jina URL extraction path, Gemini multimodal path, AI content analysis, Photo Standard generation
+Description: Verifies the primary content workflow can be initiated with either supported intelligence provider.
+Steps:
+1. Upload a product screenshot
+2. Paste a product/affiliate link
+3. Select Jina Reader and select "Buat Konten + Foto Standard"
+4. Repeat the provider selection with Gemini
+Expected: The selected provider is visibly selected and the content workflow returns a reviewable product result; missing provider keys produce a specific configuration error rather than a silent success.
+
+## Test 2 - Start video pipeline and observe durable stage progress
+Viewport: desktop
+Covers: video start API, four Sora scene jobs, server-side FFmpeg assembly, Indonesian TTS, progress state, failure state
+Description: Verifies video generation is a server-side job with visible progress and a terminal state.
+Setup:
+1. Complete Test 1 so Photo Standard exists
+Steps:
+1. Select "Buat Iklan Video"
+2. Observe the Video Engine status
+3. Wait for a terminal result
+Expected: The UI reports scene generation, assembly, and then either a playable final MP4 or a specific failure message; it never reports success with an empty output.
+
+## Test 3 - Approve generated content
+Viewport: mobile
+Covers: content approval endpoint, approved state, mobile review interaction
+Description: Verifies approved content is persisted separately from generation.
+Setup:
+1. Complete Test 1 so content exists
+Steps:
+1. Select "Approve"
+2. Reload the page
+Expected: The approval action completes without exposing provider secrets and the approved state is represented in the workflow.
+
+## Test 4 - Reject Meta publish when Page credentials are not configured
+Viewport: desktop
+Covers: Meta provider status, Page Access Token boundary, publish guardrail
+Description: Verifies the publisher never attempts a Meta publish without required Page credentials.
+Steps:
+1. Select "Cek Konektor & Kunci"
+2. Review Jina, Gemini, OpenAI, FFmpeg, and Meta provider states
+Expected: Provider states are visible without revealing secret values, and Meta reports NOT CONFIGURED when Page credentials are absent.
