@@ -1,0 +1,9 @@
+{
+  "timezone": "Asia/Jakarta",
+  "daily_slots": [
+    { "time": "07:00", "platform": "shopee" },
+    { "time": "15:00", "platform": "tiktok" },
+    { "time": "21:00", "platform": "lazada" }
+  ],
+  "same_day_product_must_be_unique": true
+}
