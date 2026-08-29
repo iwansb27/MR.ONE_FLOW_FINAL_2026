@@ -1,0 +1,7 @@
+{
+  "phase": 1,
+  "primary_target": "facebook_primary",
+  "secondary_target": null,
+  "buffer_enabled": false,
+  "one_distribution_engine": true
+}
