@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MR.ONE Content Record v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "date",
+    "day",
+    "time",
+    "platform",
+    "product_name",
+    "product_type",
+    "category",
+    "description",
+    "caption",
+    "affiliate_link",
+    "target_facebook",
+    "status",
+    "created_at",
+    "updated_at",
+    "posted_at",
+    "error",
+    "retry_count"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^MR-[0-9]{8}-[0-9]{3}$" },
+    "date": { "type": "string", "format": "date" },
+    "day": { "type": "string" },
+    "time": { "type": "string", "pattern": "^[0-2][0-9]:[0-5][0-9]$" },
+    "platform": { "enum": ["shopee", "tiktok", "lazada"] },
+    "product_name": { "type": "string", "minLength": 1 },
+    "product_type": { "type": "string" },
+    "category": { "type": "string" },
+    "product_context": { "type": "object" },
+    "description": { "type": "string", "minLength": 1 },
+    "caption": { "type": "string", "minLength": 1 },
+    "affiliate_link": { "type": "string", "format": "uri", "minLength": 1 },
+    "target_facebook": { "type": "string", "minLength": 1 },
+    "status": {
+      "enum": ["DRAFT", "REVIEW", "APPROVED", "READY", "POSTING", "POSTED", "FAILED", "RETRY"]
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "posted_at": { "type": ["string", "null"], "format": "date-time" },
+    "error": { "type": ["string", "null"] },
+    "retry_count": { "type": "integer", "minimum": 0 },
+    "last_attempt_at": { "type": ["string", "null"], "format": "date-time" }
+  }
+}
