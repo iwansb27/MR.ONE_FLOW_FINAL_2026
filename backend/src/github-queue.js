@@ -1,46 +1,15 @@
-import { validateRecord } from './queue.js';
+import { validateRecord, TRANSITIONS, VALID_STATUSES } from './queue.js';
 
 const repo = process.env.GITHUB_REPOSITORY || 'iwansb27/MR.ONE_FLOW_FINAL_2026';
 const branch = process.env.GITHUB_BRANCH || 'main';
 const apiBase = `https://api.github.com/repos/${repo}`;
-const headers = () => ({ Accept: 'application/vnd.github+json', Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json' });
+const headers = () => ({ Accept:'application/vnd.github+json', Authorization:`Bearer ${process.env.GITHUB_TOKEN}`, 'X-GitHub-Api-Version':'2022-11-28', 'Content-Type':'application/json' });
 const pathFor = id => `queue/${id}.json`;
-
-function assertConfigured() { if (!process.env.GITHUB_TOKEN) throw new Error('GITHUB_TOKEN is not configured'); }
-async function github(path, options = {}) {
-  assertConfigured();
-  const response = await fetch(`${apiBase}/contents/${path}`, { ...options, headers: { ...headers(), ...(options.headers || {}) } });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) { const error = new Error(data.message || `GitHub API ${response.status}`); error.status = response.status; throw error; }
-  return data;
-}
-
-export async function getRecord(id) {
-  const data = await github(pathFor(id) + `?ref=${encodeURIComponent(branch)}`);
-  return JSON.parse(Buffer.from(data.content, 'base64').toString('utf8'));
-}
-
-export async function listRecords() {
-  const response = await fetch(`${apiBase}/contents/queue?ref=${encodeURIComponent(branch)}`, { headers: headers() });
-  if (response.status === 404) return [];
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.message || `GitHub API ${response.status}`);
-  const files = Array.isArray(data) ? data.filter(item => item.type === 'file' && /^MR-\d{8}-\d{3}\.json$/.test(item.name)) : [];
-  const records = await Promise.all(files.map(async file => JSON.parse(Buffer.from((await github(`${file.path}?ref=${encodeURIComponent(branch)}`)).content, 'base64').toString('utf8'))));
-  return records.sort((a,b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));
-}
-
-export async function createRecord(record) {
-  const errors = validateRecord(record); if (errors.length) throw new Error(errors.join('; '));
-  const content = Buffer.from(JSON.stringify({ ...record, created_at: record.created_at || new Date().toISOString(), updated_at: new Date().toISOString() }, null, 2) + '\n').toString('base64');
-  return github(pathFor(record.id), { method: 'PUT', body: JSON.stringify({ message: `queue: add ${record.id}`, content, branch }) });
-}
-
-export async function updateRecord(record, message = `queue: update ${record.id}`) {
-  const errors = validateRecord(record); if (errors.length) throw new Error(errors.join('; '));
-  const current = await github(pathFor(record.id) + `?ref=${encodeURIComponent(branch)}`);
-  const content = Buffer.from(JSON.stringify({ ...record, updated_at: new Date().toISOString() }, null, 2) + '\n').toString('base64');
-  return github(pathFor(record.id), { method: 'PUT', body: JSON.stringify({ message, content, sha: current.sha, branch }) });
-}
-
+function assertConfigured(){if(!process.env.GITHUB_TOKEN) throw new Error('GITHUB_TOKEN is not configured');}
+async function github(path, options={}){assertConfigured();const response=await fetch(`${apiBase}/contents/${path}`,{...options,headers:{...headers(),...(options.headers||{})}});const data=await response.json().catch(()=>({}));if(!response.ok){const e=new Error(data.message||`GitHub API ${response.status}`);e.status=response.status;throw e;}return data;}
+export async function getRecord(id){const data=await github(pathFor(id)+`?ref=${encodeURIComponent(branch)}`);return JSON.parse(Buffer.from(data.content,'base64').toString('utf8'));}
+export async function listRecords(){assertConfigured();const response=await fetch(`${apiBase}/contents/queue?ref=${encodeURIComponent(branch)}`,{headers:headers()});if(response.status===404)return [];const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.message||`GitHub API ${response.status}`);const files=Array.isArray(data)?data.filter(item=>item.type==='file'&&/^MR-\d{8}-\d{3}\.json$/.test(item.name)):[];const records=await Promise.all(files.map(async file=>JSON.parse(Buffer.from((await github(`${file.path}?ref=${encodeURIComponent(branch)}`)).content,'base64').toString('utf8'))));return records.sort((a,b)=>`${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));}
+export async function createRecord(record){const errors=validateRecord(record);if(errors.length)throw new Error(errors.join('; '));const content=Buffer.from(JSON.stringify({...record,created_at:record.created_at||new Date().toISOString(),updated_at:new Date().toISOString()},null,2)+'\n').toString('base64');return github(pathFor(record.id),{method:'PUT',body:JSON.stringify({message:`queue: add ${record.id}`,content,branch})});}
+export async function updateRecord(record,message=`queue: update ${record.id}`){const errors=validateRecord(record);if(errors.length)throw new Error(errors.join('; '));const current=await github(pathFor(record.id)+`?ref=${encodeURIComponent(branch)}`);const content=Buffer.from(JSON.stringify({...record,updated_at:new Date().toISOString()},null,2)+'\n').toString('base64');return github(pathFor(record.id),{method:'PUT',body:JSON.stringify({message,content,sha:current.sha,branch})});}
+export async function transitionRecord(id,nextStatus,patch={}){if(!VALID_STATUSES.includes(nextStatus))throw new Error('invalid target status');const current=await getRecord(id);if(!TRANSITIONS[current.status]?.includes(nextStatus))throw new Error(`invalid transition ${current.status} -> ${nextStatus}`);return updateRecord({...current,...patch,status:nextStatus},`queue: ${id} ${current.status} -> ${nextStatus}`);}
 export { branch, repo };
