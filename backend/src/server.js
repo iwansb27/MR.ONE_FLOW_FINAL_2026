@@ -1,11 +1,46 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import { createRecord, readRecord, listRecords, transition, validateRecord, isReadyToPost, VALID_STATUSES } from './queue.js';
+
 const app = express();
 const port = Number(process.env.PORT || 8787);
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
-app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'mr-one-backend', json2videoConfigured: Boolean(process.env.JSON2VIDEO_API_KEY) }));
+
+app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'mr-one-backend', queue: true, json2videoConfigured: Boolean(process.env.JSON2VIDEO_API_KEY) }));
+
+app.get('/api/queue', async (_req, res) => {
+  try { return res.json({ ok: true, records: await listRecords() }); }
+  catch (error) { return res.status(500).json({ ok: false, error: error.message }); }
+});
+
+app.get('/api/queue/:id', async (req, res) => {
+  try { return res.json({ ok: true, record: await readRecord(req.params.id) }); }
+  catch (error) { return res.status(error.code === 'ENOENT' ? 404 : 400).json({ ok: false, error: error.message }); }
+});
+
+app.post('/api/queue', async (req, res) => {
+  const errors = validateRecord(req.body);
+  if (errors.length) return res.status(400).json({ ok: false, errors });
+  try { return res.status(201).json({ ok: true, record: await createRecord(req.body) }); }
+  catch (error) { return res.status(409).json({ ok: false, error: error.message }); }
+});
+
+app.post('/api/queue/:id/transition', async (req, res) => {
+  const { status, patch = {} } = req.body || {};
+  if (!VALID_STATUSES.includes(status)) return res.status(400).json({ ok: false, error: 'invalid status' });
+  try { return res.json({ ok: true, record: await transition(req.params.id, status, patch) }); }
+  catch (error) { return res.status(409).json({ ok: false, error: error.message }); }
+});
+
+app.get('/api/queue/ready/due', async (_req, res) => {
+  try {
+    const records = (await listRecords()).filter(record => isReadyToPost(record));
+    return res.json({ ok: true, records });
+  } catch (error) { return res.status(500).json({ ok: false, error: error.message }); }
+});
+
 app.post('/api/json2video/render', async (req, res) => {
   const apiKey = process.env.JSON2VIDEO_API_KEY;
   if (!apiKey) return res.status(500).json({ ok: false, error: 'JSON2VIDEO_API_KEY is not configured' });
@@ -18,6 +53,7 @@ app.post('/api/json2video/render', async (req, res) => {
     return res.json({ ok: true, ...data });
   } catch (error) { return res.status(502).json({ ok: false, error: 'Unable to reach JSON2Video', details: error.message }); }
 });
+
 app.get('/api/json2video/status/:projectId', async (req, res) => {
   const apiKey = process.env.JSON2VIDEO_API_KEY;
   if (!apiKey) return res.status(500).json({ ok: false, error: 'JSON2VIDEO_API_KEY is not configured' });
@@ -28,4 +64,5 @@ app.get('/api/json2video/status/:projectId', async (req, res) => {
     return res.json({ ok: true, ...data });
   } catch (error) { return res.status(502).json({ ok: false, error: 'Unable to reach JSON2Video', details: error.message }); }
 });
-app.listen(port, () => console.log(`MR.ONE backend listening on port ${port}`));
+
+app.listen(port, () => console.log(`MR.ONE backend listening on ${port}`));
