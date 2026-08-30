@@ -32,3 +32,4 @@ jobs:
       - run: node --check src/queue.js
       - run: node --check src/github-queue.js
       - run: node --check src/server.js
+      - run: node test/queue.runtime.test.js
