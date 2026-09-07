@@ -1,0 +1,59 @@
+name: MR.ONE Deploy Readiness
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'queue/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - '.github/workflows/deploy-readiness.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'queue/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - '.github/workflows/deploy-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build container
+        run: docker build -t mr-one-backend:test .
+
+      - name: Start container
+        run: docker run -d --name mr-one-backend-test -p 8787:8787 mr-one-backend:test
+
+      - name: Wait for health endpoint
+        shell: bash
+        run: |
+          set -e
+          for i in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8787/api/health; then
+              echo
+              echo "MR.ONE backend container health check: PASS"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MR.ONE backend container health check: FAIL"
+          docker logs mr-one-backend-test
+          exit 1
+
+      - name: Show container logs
+        if: always()
+        run: docker logs mr-one-backend-test || true
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f mr-one-backend-test || true
