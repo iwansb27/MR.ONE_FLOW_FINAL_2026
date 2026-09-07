@@ -1,0 +1,1098 @@
+MASTER HANDOFF FINAL v1.1
+
+STOCK CONTRIBUTOR CONNECTOR
+
+Status Blueprint: FINAL / SOURCE OF TRUTH
+Implementation Status: Foundation Working — sebagian E2E sudah terbukti, lifecycle submission platform belum selesai
+Platform Implementation: Floot
+Portability: Dapat dipindahkan ke App Builder lain
+AI Utama: Floot AI
+Jina: NOT USED
+Production Ready: FALSE
+
+---
+
+A. TUJUAN
+
+Stock Contributor Connector bukan sekadar aplikasi upload gambar.
+
+Produk ini adalah operational bridge untuk mengelola satu paket kerja Contributor: FILE + METADATA, dari upload sampai siap atau terbukti submitted berdasarkan bukti resmi dari platform.
+
+Canonical Flow
+
+UPLOAD → AI ANALYSIS → METADATA → REVIEW → APPROVE → TRANSFER → PLATFORM METADATA READY → FINAL SUBMIT → REVIEW
+
+Setiap tahap harus memiliki status dan bukti yang jelas.
+
+Transfer file tidak sama dengan submission.
+
+---
+
+B. PEMBAGIAN TUGAS MUTLAK
+
+SYSTEM / AI
+
+System bertanggung jawab untuk:
+
+- menerima file
+- menyimpan file
+- membuat dan mempertahankan Job ID
+- membaca gambar
+- melakukan AI analysis
+- menghasilkan metadata
+- melakukan validasi metadata
+- menyimpan metadata
+- menyimpan approval
+- menyiapkan package platform
+- melakukan transfer resmi jika mekanismenya tersedia
+- membuat CSV bila diperlukan
+- memeriksa hasil transfer
+- menyimpan audit log
+- menunjukkan status sebenarnya
+- menunjukkan USER ACTION REQUIRED jika diperlukan
+
+USER
+
+User bertanggung jawab untuk:
+
+- upload source file
+- review metadata
+- edit metadata jika diperlukan
+- approve metadata
+- melakukan tindakan manual pada platform jika automation resmi tidak tersedia
+- melakukan final submit
+- memonitor review/rejection platform
+
+System tidak boleh memaksa user mengetik ulang metadata yang sudah dipersiapkan.
+
+Jika tindakan tidak dapat dilakukan secara resmi oleh system:
+
+MANUAL PLATFORM ACTION REQUIRED
+
+---
+
+C. DATA MODEL
+
+Prinsip utama:
+
+FILE + METADATA = ONE JOB
+
+Field utama:
+
+- jobId
+- originalFile
+- filename
+- fileType
+- dimensions
+- fileSize
+- targetPlatforms
+- AI provider
+- title
+- description
+- keywords
+- categories
+- editorial
+- mature
+- illustration
+- location
+- modelRelease
+- propertyRelease
+- userApproved
+- platformStatus
+- transferStatus
+- metadataStatus
+- submissionStatus
+- auditLogs
+
+Job harus tetap tersedia setelah:
+
+- browser ditutup
+- refresh
+- HP/laptop mati
+- session berakhir
+- user kembali di hari berikutnya
+
+---
+
+D. AI METADATA ENGINE
+
+AI hanya boleh menggunakan fakta yang terlihat atau dapat dipertanggungjawabkan dari gambar.
+
+AI DILARANG mengarang:
+
+- lokasi
+- tanggal
+- identitas orang
+- profesi orang
+- brand
+- produk
+- aktivitas
+- properti
+- konteks yang tidak terlihat
+
+Default keyword generation:
+
+25–40 keyword relevan
+
+Platform validator tetap menjadi validator akhir.
+
+Untuk Shutterstock:
+
+- keyword harus relevan
+- spesifik
+- tidak spam
+- menggunakan bahasa Inggris
+- berada dalam range yang diterima platform
+- tidak menggunakan trademark secara tidak semestinya
+
+---
+
+E. SHUTTERSTOCK ADAPTER
+
+Foundation Shutterstock mencakup:
+
+- JPEG/TIFF
+- minimum 4MP
+- sRGB recommended
+- FTPS transfer
+- pre-validation
+
+Metadata package:
+
+- title
+- description
+- keywords
+- category
+- optional second category
+- optional location
+
+Dokumentasi workflow keyword:
+
+7–50 keywords
+
+CSV
+
+CSV menggunakan field:
+
+- Filename
+- Description
+- Keywords
+- Categories
+- Illustration
+- Mature Content
+- Editorial
+
+CSV merupakan mekanisme terpisah dari FTPS.
+
+ATURAN MUTLAK
+
+FILE_TRANSFERRED != SUBMITTED
+
+File yang berhasil dikirim melalui FTPS belum berarti file sudah disubmit ke Shutterstock.
+
+"FINAL_SUBMIT_REQUIRED" hanya boleh digunakan jika file dan metadata memang sudah siap dan mekanisme resmi platform memerlukan tindakan final dari user.
+
+Platform UI / Documentation Difference
+
+Batas field UI Shutterstock dapat berbeda dengan batas yang tercantum pada dokumentasi.
+
+Karena itu system tidak boleh hanya mengandalkan angka dokumentasi.
+
+Validator harus mengikuti field submission aktual yang digunakan.
+
+Versi sebelumnya mencatat adanya perbedaan konteks antara batas UI sekitar 150 karakter dan dokumentasi yang dapat mencantumkan batas lebih tinggi. Hal tersebut tetap dianggap sebagai concern adapter dan harus diverifikasi pada workflow aktual.
+
+---
+
+F. DREAMSTIME ADAPTER
+
+Foundation target:
+
+- JPG
+- RGB/sRGB
+- minimum 3MP
+- maximum 70MP
+
+FTP success tidak sama dengan submission.
+
+Expected flow:
+
+FTP → Processing → Unfinished Files → Metadata/License Workflow → Finalization → Submit → Pending
+
+Dreamstime E2E:
+
+BELUM TERBUKTI
+
+---
+
+G. RELEASE SYSTEM
+
+Status:
+
+- NOT_REQUIRED
+- REQUIRED
+- UPLOADED
+- MISSING
+- VERIFIED_BY_USER
+
+AI dapat memberikan warning apabila terdapat kemungkinan recognizable person/property.
+
+AI tidak boleh menyatakan bahwa release secara legal sudah valid.
+
+Validasi legal tetap menjadi tanggung jawab user/platform.
+
+---
+
+H. PLATFORM FLAGS
+
+Platform classification dapat mencakup:
+
+- commercial
+- editorial
+- illustration
+- mature
+
+Jika AI/system tidak yakin:
+
+USER REVIEW REQUIRED
+
+Jangan mengambil keputusan legal atau platform-sensitive tanpa dasar yang cukup.
+
+---
+
+I. STATUS ENGINE
+
+Canonical lifecycle:
+
+UPLOADED
+
+↓
+
+VALIDATING
+
+↓
+
+AI_ANALYZING
+
+↓
+
+METADATA_READY
+
+↓
+
+USER_REVIEW
+
+↓
+
+USER_APPROVED
+
+↓
+
+TRANSFER_IN_PROGRESS
+
+↓
+
+FILE_TRANSFERRED
+
+↓
+
+PLATFORM_METADATA_READY
+
+↓
+
+FINAL_SUBMIT_REQUIRED
+
+↓
+
+SUBMITTED
+
+↓
+
+PENDING_REVIEW
+
+↓
+
+APPROVED
+
+Failure / Action States
+
+- TRANSFER_FAILED
+- METADATA_FAILED
+- PLATFORM_REJECTED
+- USER_ACTION_REQUIRED
+
+Rule
+
+Tidak boleh melompat status tanpa evidence.
+
+---
+
+J. DEFINISI STATUS
+
+FILE_TRANSFERRED
+
+Artinya:
+
+File sudah berhasil ditransfer.
+
+Tidak berarti:
+
+- metadata sudah diterapkan
+- submission sudah dilakukan
+- review sudah dimulai
+- file sudah approved
+
+METADATA_READY
+
+Metadata sudah:
+
+- generated
+- validated
+- persisted
+
+PLATFORM_METADATA_READY
+
+Metadata sudah benar-benar diterapkan melalui mekanisme resmi platform, atau secara jelas sudah siap untuk official import mechanism.
+
+SUBMITTED
+
+Hanya boleh digunakan jika platform menerima submission tersebut.
+
+PENDING_REVIEW
+
+Hanya boleh digunakan jika platform menunjukkan bahwa submission sedang dalam review.
+
+APPROVED
+
+Hanya boleh digunakan jika platform secara eksplisit menyatakan approved.
+
+---
+
+K. ERROR HANDLING
+
+System harus menangani:
+
+- network error
+- FTP/FTPS error
+- authentication error
+- duplicate filename
+- invalid file
+- invalid metadata
+- invalid keyword
+- invalid category
+- AI failure
+- AI quota
+- platform unavailable
+- CSV rejected
+- metadata mismatch
+- platform rejection
+- USER ACTION REQUIRED
+
+Setiap error wajib menjawab:
+
+1. Apa yang gagal?
+2. Di mana gagalnya?
+3. Apa tindakan berikutnya?
+
+Retry hanya untuk failure yang aman untuk diulang.
+
+---
+
+L. DUPLICATE PROTECTION
+
+Job ID harus unique.
+
+Duplicate protection menggunakan kombinasi seperti:
+
+filename + hash + target platform
+
+Jika duplicate ditemukan:
+
+DUPLICATE WARNING
+
+Bukan silent resend.
+
+---
+
+M. RETRY POLICY
+
+Aman untuk retry
+
+- timeout
+- temporary network failure
+- transient platform failure
+
+Jangan looping
+
+Authentication failure.
+
+Jangan auto-resend
+
+Platform rejection.
+
+Semua retry harus tercatat pada audit log.
+
+---
+
+N. SECURITY
+
+Credential platform harus:
+
+- server-side
+- secret manager
+- tidak masuk client bundle
+- tidak masuk browser storage
+- tidak masuk URL
+- tidak masuk frontend state
+- tidak masuk log
+- tidak disimpan sebagai plaintext database jika secret manager tersedia
+
+User tidak boleh diminta menempelkan secret ke chat.
+
+---
+
+O. AI PROVIDER ARCHITECTURE
+
+Core workflow harus provider-independent.
+
+Architecture:
+
+Core → AI Adapter → Provider
+
+Provider saat ini:
+
+Floot AI
+
+Provider lain dapat ditambahkan kemudian.
+
+Normalized output:
+
+- title
+- description
+- keywords
+- categories
+- confidence
+- warnings
+
+Jina
+
+NOT USED
+
+Jangan mengembalikan Jina ke architecture tanpa permintaan dan audit baru.
+
+---
+
+P. PLATFORM ADAPTER ARCHITECTURE
+
+Shutterstock
+
+Core Job → Shutterstock Adapter
+
+Adapter menangani:
+
+- validator
+- uploader
+- metadata mapper
+- CSV generator
+
+Dreamstime
+
+Core Job → Dreamstime Adapter
+
+Adapter menangani:
+
+- validator
+- FTP uploader
+- metadata mapper
+
+Adapter harus independen sehingga perubahan platform tidak merusak Core.
+
+---
+
+Q. UI FINAL
+
+UI wajib mendukung:
+
+- upload
+- AI analysis
+- metadata review
+- metadata editing
+- approve
+- target platform selection
+- transfer
+- status
+
+UI harus membedakan secara jelas:
+
+- Metadata Ready
+- Final Submit Required
+- Submitted
+- Pending Review
+- Approved
+- Failed
+- User Action Required
+
+---
+
+R. AUDIT LOG
+
+Event minimal:
+
+- created
+- uploaded
+- AI analyzed
+- metadata edited
+- approved
+- transfer started
+- transfer completed
+- transfer failed
+- metadata prepared
+- user action required
+- submitted
+- pending
+- approved
+- rejected
+
+Setiap event memiliki timestamp.
+
+Audit log tidak boleh menyimpan secret.
+
+---
+
+S. BACKUP / PERSISTENCE
+
+System harus persistent.
+
+Browser close bukan berarti Job hilang.
+
+Refresh bukan berarti Job hilang.
+
+HP/laptop mati bukan berarti Job hilang.
+
+User dapat melanjutkan pekerjaan pada hari berikutnya.
+
+---
+
+T. PLATFORM CHANGES
+
+Platform dapat mengubah:
+
+- UI
+- CSV
+- FTP/FTPS
+- API
+- metadata requirement
+- keyword requirement
+- submission workflow
+
+Karena itu:
+
+Platform Adapter harus dapat diperbarui secara independen dari Core.
+
+Jangan menganggap workflow lama selalu tetap berlaku.
+
+---
+
+U. ACCEPTANCE TEST
+
+Shutterstock
+
+Acceptance target:
+
+UPLOAD → AI → REVIEW → APPROVE → TRANSFER → METADATA → FINAL SUBMIT → PENDING REVIEW
+
+Harus terdapat evidence dari platform.
+
+Dreamstime
+
+Acceptance target:
+
+UPLOAD → AI → REVIEW → APPROVE → FTP → METADATA → SUBMIT → PENDING
+
+Harus terdapat evidence dari platform.
+
+Jika acceptance test gagal:
+
+NOT PRODUCTION READY
+
+---
+
+V. NON-NEGOTIABLE RULES
+
+1. Tidak boleh menyatakan success hanya karena satu stage berhasil.
+2. File + metadata adalah satu package kerja.
+3. FTP/FTPS bukan submission.
+4. Jangan membuat metadata palsu.
+5. Jangan mengatakan “tinggal submit” tanpa evidence.
+6. Jangan mengarang API platform.
+7. Jangan bypass security platform.
+8. Credential harus server-side.
+9. Jangan mengubah proven path tanpa impact audit.
+10. Setiap perubahan harus dites.
+11. Jika belum terbukti, tulis:
+
+BELUM TERBUKTI
+
+12. E2E evidence adalah standar akhir.
+
+---
+
+W. IMPLEMENTATION STATUS — PEKERJAAN SAMPAI HARI INI
+
+PROVEN
+
+1. Private Floot Storage
+
+Original image berhasil disimpan di private storage.
+
+STATUS: PROVEN
+
+2. Direct Browser Upload
+
+Browser melakukan PUT langsung ke presigned URL.
+
+File tidak melewati:
+
+- "/_api"
+- database
+
+STATUS: PROVEN
+
+3. Job ID + PostgreSQL Persistence
+
+Job ID dan Job persistence sudah berjalan.
+
+STATUS: PROVEN
+
+4. Job GET Persistence
+
+Job dapat diambil kembali dari persistence layer.
+
+STATUS: PROVEN
+
+5. Floot AI Image Analysis
+
+AI berhasil menganalisis gambar menggunakan server-side signed URL dari private storage.
+
+STATUS: PROVEN
+
+6. AI Metadata
+
+AI berhasil menghasilkan:
+
+- title
+- description
+- keywords
+
+STATUS: PROVEN
+
+7. Metadata Persistence
+
+Metadata berhasil disimpan pada Job.
+
+STATUS: PROVEN
+
+8. User Approval Persistence
+
+Approval user berhasil disimpan.
+
+STATUS: PROVEN
+
+9. Shutterstock FTPS Transfer
+
+Direct Shutterstock FTPS transfer sebelumnya sudah berhasil diuji.
+
+STATUS: PROVEN
+
+---
+
+X. TRANSFER STATUS + AUDIT
+
+Implementasi telah ditambahkan untuk:
+
+Transfer Status
+
+- TRANSFER_IN_PROGRESS
+- FILE_TRANSFERRED
+- TRANSFER_FAILED
+
+Audit Event
+
+- transfer_started
+- transfer_completed
+- transfer_failed
+
+Source Matching
+
+System memeriksa Job dan original file reference sebelum melakukan transfer.
+
+UI Transfer Gate
+
+Transfer hanya dapat dilakukan jika:
+
+- Job tersedia
+- user sudah approve
+
+Validation
+
+Latest implementation telah:
+
+- typechecked
+- test suite passed
+
+Namun exact runtime verification setelah patch terakhir belum dilakukan karena build/edit quota Floot habis.
+
+Oleh karena itu status yang benar adalah:
+
+IMPLEMENTED + TYPECHECK/TEST CLEAN
+
+Tetapi:
+
+POST-PATCH RUNTIME VERIFICATION: BELUM TERBUKTI
+
+Jangan menulis bahwa seluruh transfer-status/audit lifecycle sudah E2E proven.
+
+---
+
+Y. TEST RESULT TERAKHIR
+
+Test suite:
+
+1 spec file passed
+0 failed
+
+Hook specs:
+
+2 hook spec files excluded by default
+
+Typecheck:
+
+CLEAN
+
+---
+
+Z. REMAINING IMPLEMENTATION GAPS
+
+1. Job Creation Saat Upload
+
+Ideal canonical flow:
+
+UPLOAD → CREATE JOB
+
+Saat ini direct storage upload berhasil dan menghasilkan Job ID, tetapi persistence Job canonical belum dibuat segera setelah PUT.
+
+Saat ini Job dibuat pada tahap Analyze.
+
+Status
+
+IMPLEMENTATION GAP
+
+Perlu diperbaiki agar:
+
+UPLOAD langsung membuat Job persistent.
+
+---
+
+2. FileDropzone
+
+UI saat ini masih menggunakan native HTML file input.
+
+Belum menggunakan Floot FileDropzone.
+
+Status
+
+BELUM DIIMPLEMENTASIKAN
+
+---
+
+3. React Query V5
+
+Frontend masih menggunakan:
+
+- fetch
+- useEffect
+- local state
+
+Refactor ke React Query V5 belum selesai.
+
+Status
+
+BELUM DIIMPLEMENTASIKAN
+
+Tidak boleh melakukan refactor besar sebelum impact audit.
+
+---
+
+4. PLATFORM_METADATA_READY
+
+State platform metadata ready belum benar-benar diimplementasikan.
+
+Status
+
+BELUM TERBUKTI
+
+---
+
+AA. CURRENT TRUTH TABLE
+
+Component| Status
+Concept| PROVEN feasible
+Private Storage original| PROVEN
+Direct browser PUT| PROVEN
+Job persistence| PROVEN
+Job GET persistence| PROVEN
+Floot AI metadata| PROVEN
+Metadata persistence| PROVEN
+Review / Approval persistence| PROVEN
+Shutterstock FTPS| PROVEN
+Transfer status implementation| IMPLEMENTED
+Transfer audit implementation| IMPLEMENTED
+Post-patch runtime verification| BELUM TERBUKTI
+Shutterstock metadata application| BELUM TERBUKTI
+Shutterstock CSV working| BELUM TERBUKTI
+PLATFORM_METADATA_READY| BELUM TERBUKTI
+Contributor Ready| BELUM TERBUKTI
+Final Submit Required| BELUM TERBUKTI
+Submitted| BELUM TERBUKTI
+Pending Review| BELUM TERBUKTI
+Approved| BELUM TERBUKTI
+Dreamstime E2E| BELUM TERBUKTI
+Production Ready| FALSE
+
+---
+
+AB. CURRENT FLOOT PROJECT STATE
+
+Project: Stock Contributor Connector
+
+Floot Project ID:
+
+"378b06a4-3246-4715-a22d-1d0d690eabf8"
+
+Latest successful patch version:
+
+"1788747097062"
+
+Latest checkpoint:
+
+"c80970c2-30ee-4bbd-81f8-d97fe5ab3037"
+
+Checkpoint name:
+
+Transfer status + audit Shutterstock
+
+Project belum dipublish ke production.
+
+---
+
+AC. BUILD ENVIRONMENT NOTE
+
+Pada akhir pekerjaan hari ini, Floot build/edit quota telah habis.
+
+Reset:
+
+2026-09-08 00:00 UTC
+
+atau:
+
+07:00 WIB
+
+Quota exhaustion bukan berarti product failure.
+
+Itu hanya membatasi perubahan/build tambahan sampai quota tersedia kembali.
+
+Jangan menyatakan E2E final selesai hanya karena foundation sudah berjalan.
+
+---
+
+AD. CURRENT ARCHITECTURE TRUTH
+
+Arsitektur yang sudah terbukti:
+
+BROWSER
+
+↓
+
+PRIVATE FLOOT STORAGE
+
+↓
+
+JOB / POSTGRES
+
+↓
+
+FLOOT AI
+
+↓
+
+METADATA
+
+↓
+
+USER REVIEW
+
+↓
+
+USER APPROVAL
+
+↓
+
+SHUTTERSTOCK FTPS
+
+↓
+
+TRANSFER STATUS + AUDIT
+
+Tahap berikutnya masih harus membuktikan:
+
+PLATFORM METADATA
+
+↓
+
+FINAL SUBMIT
+
+↓
+
+PENDING REVIEW
+
+↓
+
+APPROVED
+
+---
+
+AE. WHAT MUST NOT BE CLAIMED
+
+Jangan mengatakan:
+
+«“Sudah otomatis upload sampai approved.”»
+
+Belum terbukti.
+
+Jangan mengatakan:
+
+«“Shutterstock sudah menerima submission.”»
+
+Belum terbukti.
+
+Jangan mengatakan:
+
+«“CSV Shutterstock sudah working.”»
+
+Belum terbukti.
+
+Jangan mengatakan:
+
+«“Contributor Ready sudah selesai.”»
+
+Belum terbukti.
+
+Jangan mengatakan:
+
+«“Dreamstime sudah selesai.”»
+
+Belum terbukti.
+
+Jangan mengatakan:
+
+«“Production ready.”»
+
+FALSE
+
+---
+
+AF. NEXT SAFE DEVELOPMENT ORDER
+
+Setelah quota Floot tersedia kembali, prioritas harus mengikuti urutan:
+
+PRIORITY 1
+
+Job dibuat persistent langsung setelah upload.
+
+PRIORITY 2
+
+Runtime verification untuk:
+
+- TRANSFER_IN_PROGRESS
+- FILE_TRANSFERRED
+- TRANSFER_FAILED
+- audit events
+
+PRIORITY 3
+
+Shutterstock metadata application.
+
+PRIORITY 4
+
+Shutterstock CSV validation/import.
+
+PRIORITY 5
+
+Platform metadata-ready evidence.
+
+PRIORITY 6
+
+Manual/final submit boundary.
+
+PRIORITY 7
+
+Pending Review evidence.
+
+PRIORITY 8
+
+Dreamstime E2E.
+
+PRIORITY 9
+
+UI improvements:
+
+- FileDropzone
+- React Query V5
+
+UI refactor dilakukan setelah core evidence path aman, bukan sebelumnya.
+
+---
+
+AG. SAFE DEVELOPMENT RULE
+
+Jangan mengubah beberapa layer sekaligus.
+
+Setiap perubahan harus:
+
+1. impact audit
+2. implement
+3. typecheck
+4. test
+5. runtime verification jika applicable
+6. checkpoint
+7. update handoff
+
+Master handoff harus selalu mencerminkan keadaan sebenarnya, bukan target yang belum terbukti.
+
+---
+
+AH. MIGRATION RULE
+
+Master handoff ini adalah:
+
+SOURCE OF TRUTH
+
+Implementation layer boleh berubah:
+
+- Floot
+- App Builder lain
+- backend lain
+- provider lain
+
+Tetapi harus mempertahankan:
+
+- core data model
+- Job model
+- platform adapters
+- credential/security layer
+- persistence
+- status engine
+- audit trail
+- error handling
+- retry policy
+- E2E acceptance standard
