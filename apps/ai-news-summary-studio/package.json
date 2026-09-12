@@ -1,1 +1,1 @@
-{"name":"ai-news-summary-studio","version":"1.0.0","private":true,"type":"module","scripts":{"start":"node server.js"},"dependencies":{"express":"^5.1.0"}}
+{"name":"ai-news-summary-studio","version":"1.1.0","private":true,"type":"module","scripts":{"start":"node server.js"},"dependencies":{"express":"^5.1.0","ffmpeg-static":"^5.2.0"}}
