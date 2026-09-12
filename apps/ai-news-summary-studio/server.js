@@ -1,0 +1,10 @@
+import express from 'express';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const app=express();
+const dir=path.dirname(fileURLToPath(import.meta.url));
+app.use(express.json({limit:'1mb'}));
+app.use(express.static(path.join(dir,'public')));
+app.get('/health',(_req,res)=>res.json({ok:true,app:'AI News & Summary Video Studio',version:'1.0.0'}));
+app.post('/api/storyboard',(_req,res)=>res.json({mode:'demo',message:'Storyboard endpoint ready. OpenRouter integration will be enabled through the server environment.'}));
+const port=process.env.PORT||3000; app.listen(port,()=>console.log('News Studio listening on '+port));
